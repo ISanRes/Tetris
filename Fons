@@ -1,0 +1,228 @@
+#include "Fons.h"
+#include <iostream>
+
+using namespace std;
+
+Fons::Fons()
+{
+    m_quadrats[COLOR_GROC].Create("data/Graficstetris/q1groc.png");
+    m_quadrats[COLOR_TARONJA].Create("data/Graficstetris/q1taronja.png");
+    m_quadrats[COLOR_ROIG].Create("data/Graficstetris/q1roig.png");
+    m_quadrats[COLOR_MAGENTA].Create("data/Graficstetris/q1magenta.png");
+    m_quadrats[COLOR_VERD].Create("data/Graficstetris/q1verd.png");
+    m_quadrats[COLOR_BLAUCEL].Create("data/Graficstetris/q1blaucel.png");
+    m_quadrats[COLOR_BLAUFOSC].Create("data/Graficstetris/q1blaufosc.png");
+}
+
+Fons::~Fons()
+{
+
+}
+
+void Fons::inicialitzar(const char *rutaFons)
+{
+
+
+    m_fons.Create("data/Graficstetris/fons.png");
+    posarNegre();
+    posarGris();
+
+}
+void Fons::posarNegre()
+{
+
+    for (int i = 0; i<MAX_FILA -3 ;i++)
+    {
+        for (int j = 3; j<MAX_COL-3 ;j++)
+        {
+            m_tauler[i][j]=COLOR_NEGRE;
+        }
+    }
+}
+
+void Fons::posarGris()
+{
+
+    int i;
+    int j;
+
+    for (i = 0; i<MAX_FILA ;i++)
+    {
+        for (j = 0; j<3 ;j++)
+        {
+            m_tauler[i][j] = COLOR_GRIS;
+        }
+    }
+
+    for (i = 0; i<MAX_FILA ;i++)
+    {
+        for (j = 14; j<MAX_COL ;j++)
+        {
+            m_tauler[i][j] = COLOR_GRIS;
+        }
+    }
+
+    for (i = 21; i<MAX_FILA ;i++)
+    {
+        for (j = 3; j<MAX_COL-3 ; j++)
+        {
+            m_tauler[i][j] = COLOR_GRIS;
+        }
+    }
+}
+
+void Fons::pintaFons()
+{
+    m_fons.Draw(0,0);
+    int aux;
+
+    for (int i = 0; i<MAX_FILA-3 ;i++)
+    {
+        for (int j = 3; j<MAX_COL-3 ;j++)
+        {
+        aux = m_tauler[i][j];
+
+        switch (aux)
+        {
+            case 0: m_quadrats[COLOR_GROC].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+            case 1: m_quadrats[COLOR_TARONJA].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+            case 2: m_quadrats[COLOR_ROIG].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+            case 3: m_quadrats[COLOR_MAGENTA].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+            case 4: m_quadrats[COLOR_VERD].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+            case 5: m_quadrats[COLOR_BLAUCEL].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+            case 6: m_quadrats[COLOR_BLAUFOSC].Draw((j-2)*MIDA_Q,(i)*MIDA_Q);
+                break;
+        }
+    }
+}
+
+}
+
+void Fons::setTauler(int fila, int columna, int color)
+{
+    m_tauler[fila][columna]=color;
+}
+
+bool Fons::guanyar(int fila)
+{
+    int i=3;
+	bool todoPintado = true;
+
+	while((todoPintado==true) && (i<MAX_COL-3))
+    {
+        if (m_tauler[fila][i] == COLOR_NEGRE)
+            todoPintado = false;
+
+        i++;
+    }
+
+    return todoPintado;
+}
+
+
+bool Fons::solapa(int** m_mascara,int posX,int posY, int DLC)
+{
+    bool solapa = false;
+    bool seguirComparant = true;
+    int i = 0;
+    int j = 0;
+    int fila = 0;
+
+    int colInicial = (posX)/MIDA_Q+2;
+    int filaInicial = (posY)/MIDA_Q;
+
+    if (DLC == 0)
+    {
+         while ((seguirComparant == true) && i<4)
+        {
+            j = 0;
+            {
+               while ((seguirComparant == true) && j<4)
+               {
+                     if (m_tauler[(posY)/MIDA_Q+i][(posX)/MIDA_Q+2+j] != COLOR_NEGRE && m_mascara[j][i]!= 0)
+                        {
+                            solapa = true;
+                            seguirComparant = false;
+                        }
+                        else
+                        {
+                            solapa = false;
+                        }
+                j++;
+                }
+           }
+           i++;
+        }
+    }
+    else
+    {
+        if (m_tauler[filaInicial][colInicial] != COLOR_GRIS)
+        {
+            fila = casellaBuida(posX,posY);
+            solapa = (filaInicial == fila);
+        }
+        else
+        {
+            solapa = true;
+        }
+
+    }
+return !solapa;
+}
+
+
+
+int Fons::filaCompletada()
+{
+    int filasCompletadas = 0;
+
+    for (int i = 0; i<MAX_FILA-3 ;i++)
+    {
+        if (guanyar(i))
+        {
+            for (int f = i; f>1 ;f--)
+            {
+                for (int c = 3; c<MAX_COL-3 ;c++)
+                {
+                    m_tauler[f][c] = m_tauler[f-1][c];
+                }
+            }
+
+            for (int j = 3; j<MAX_COL-3 ; j++)
+            {
+                m_tauler[0][j] = COLOR_NEGRE;
+            }
+            filasCompletadas++;
+        }
+    }
+    return filasCompletadas;
+}
+
+int Fons::casellaBuida(int posX, int posY)
+{
+    int casellaBuida = 0;
+    bool trobat=false;
+    int fila = MAX_FILA;
+    int columna = (posX/MIDA_Q);
+
+    while ((fila > (posY/MIDA_Q)) && trobat==false)
+    {
+        if ((m_tauler[columna][fila]) == COLOR_NEGRE)
+        {
+            casellaBuida = fila;
+            trobat=true;
+            cout << columna << endl;
+            cout << fila << endl;
+        }
+
+        fila = fila - 1;
+
+    }
+    return casellaBuida;
+}
